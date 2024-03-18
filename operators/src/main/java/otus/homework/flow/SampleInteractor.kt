@@ -1,7 +1,15 @@
 package otus.homework.flow
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.zip
 
 @ExperimentalCoroutinesApi
 class SampleInteractor(
@@ -18,7 +26,13 @@ class SampleInteractor(
      * 6) возвращает результат
      */
     fun task1(): Flow<String> {
-        return flowOf()
+        return sampleRepository.produceNumbers().map {
+            it * 5
+        }.filter {
+            it > 20 && it % 2 != 0
+        }.map {
+            "$it won"
+        }.take(3)
     }
 
     /**
@@ -29,7 +43,31 @@ class SampleInteractor(
      * Если число не делится на 3,5,15 - эмитим само число
      */
     fun task2(): Flow<String> {
-        return flowOf()
+        return flow {
+            sampleRepository.produceNumbers().collect { value ->
+                val stringValue = value.toString()
+                when {
+                    value % 15 == 0 -> {
+                        emit(stringValue)
+                        emit("FizzBuzz")
+                    }
+
+                    value % 3 == 0 -> {
+                        emit(stringValue)
+                        emit("Fizz")
+                    }
+
+                    value % 5 == 0 -> {
+                        emit(stringValue)
+                        emit("Buzz")
+                    }
+
+                    else -> {
+                        emit(stringValue)
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -38,7 +76,9 @@ class SampleInteractor(
      * Если айтемы в одно из флоу кончились то результирующий флоу также должен закончится
      */
     fun task3(): Flow<Pair<String, String>> {
-        return flowOf()
+        val flow1 = sampleRepository.produceColors()
+        val flow2 = sampleRepository.produceForms()
+        return flow1.zip(flow2) { a, b -> Pair(a, b) }
     }
 
     /**
@@ -48,6 +88,16 @@ class SampleInteractor(
      * При любом исходе, будь то выброс исключения или успешная отработка функции вызовите метод dotsRepository.completed()
      */
     fun task4(): Flow<Int> {
-        return flowOf()
+        return flow {
+            sampleRepository.produceNumbers().catch {
+                if (it is IllegalArgumentException) {
+                    emit(-1)
+                } else throw it
+            }.onCompletion {
+                sampleRepository.completed()
+            }.collect {
+                emit(it)
+            }
+        }
     }
 }

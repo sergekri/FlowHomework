@@ -4,14 +4,12 @@ plugins {
 }
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "30.0.3"
+    compileSdk 34
+    buildToolsVersion '34.0.0'
     defaultConfig {
 
         minSdkVersion 23
-        targetSdkVersion 30
-        versionCode 1
-        versionName "1.0"
+        targetSdk 34
     }
 
     compileOptions {
@@ -21,6 +19,7 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    namespace 'otus.homework.flow'
 }
 
 dependencies {
